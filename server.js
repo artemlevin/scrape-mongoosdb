@@ -36,35 +36,38 @@ mongoose.connect("mongodb://localhost/mongoosScraper", { useNewUrlParser: true }
 app.get("/scrape", (req, res) => {
     console.log("scrape ran")
         // First, we grab the body of the html with request
-    request("https://www.nytimes.com/", (error, response, body) => {
+    request("https://www.nytimes.com/section/world?action=click&module=Well&pgtype=Homepage", (error, response, body) => {
         if (!error && response.statusCode === 200) {
             // Then, we load that into cheerio and save it to $ for a shorthand selector
             const $ = cheerio.load(body);
             let count = 0;
             // Now, we grab every article:
-            $('article').each(function(i, element) {
+            $('li.css-ye6x8s').each(function(i, element) {
                 // Save an empty result object
                 let count = i;
                 let result = {};
+
                 // Add the text and href of every link, and summary and byline, saving them to object
                 result.title = $(element)
-                    .children('.story-heading')
-                    .children('a')
+                    .find('div.css-4jyr1y')
+                    .find('a h2')
                     .text().trim();
-                result.link = $(element)
-                    .children('.story-heading')
-                    .children('a')
+                console.log(result.title);
+                link1 = $(element)
+
+                .find('div.css-4jyr1y')
+                    .find('a')
                     .attr("href");
+                result.link = "https://www.nytimes.com" + link1;
+                console.log(result.link);
                 result.summary = $(element)
-                    .children('.summary')
-                    .text().trim() ||
-                    $(element)
-                    .children('ul')
+
+                .find('div.css-4jyr1y')
+                    .find('a p')
                     .text().trim();
-                result.byline = $(element)
-                    .children('.byline')
-                    .text().trim() ||
-                    'No byline available'
+                console.log(result.summary)
+
+
 
                 if (result.title && result.link && result.summary) {
                     // Create a new Article using the `result` object built from scraping, but only if both values are present
